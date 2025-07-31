@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: dweebe-api       # your Azure Web App name
-  AZURE_WEBAPP_PACKAGE_PATH: './server'  # path to backend folder
-  NODE_VERSION: '22.x'               # match Node version on Azure
+  AZURE_WEBAPP_NAME: dweebe-api
+  AZURE_WEBAPP_PACKAGE_PATH: './server'
+  NODE_VERSION: '22.x'
 
 permissions:
   contents: read
@@ -21,8 +21,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/package-lock.json
 
     - name: Install dependencies
       working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
@@ -35,14 +33,8 @@ jobs:
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   deploy:
-    permissions:
-      contents: none
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
     steps:
     - name: Download artifact from build job
       uses: actions/download-artifact@v4
@@ -50,7 +42,6 @@ jobs:
         name: node-app
 
     - name: 'Deploy to Azure WebApp'
-      id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
